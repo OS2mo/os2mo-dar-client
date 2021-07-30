@@ -1,49 +1,52 @@
-import aiohttp
-import asyncio
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 import warnings
-from typing import Any
-from functools import wraps
-from functools import partial
+from types import TracebackType
+from typing import Optional
+from typing import Type
 
+import aiohttp
 from ra_utils.syncable import Syncable
 
 
-def check_session(func):
-    @wraps(func)
-    async def wrapped(self, *args, **kwargs):
-        if self._session is None:
-            raise ValueError("Session not set")
-        return await func(self, *args, **kwargs)
-    return wrapped
-
-
 class AsyncDARClient:
-    def __init__(self):
-        self._session = None
-        self._baseurl = "https://dawa.aws.dk"
+    def __init__(self) -> None:
+        self._session: Optional[aiohttp.ClientSession] = None
+        self._baseurl: str = "https://dawa.aws.dk"
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "AsyncDARClient":
         await self.aopen()
         return self
 
-    async def __aexit__(self, *err):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        exc_traceback: Optional[TracebackType],
+    ) -> bool:
         await self.aclose()
+        return False
 
-    async def aopen(self):
+    async def aopen(self) -> None:
         if self._session:
             warnings.warn("aopen called with existing session", UserWarning)
             return
         connector = aiohttp.TCPConnector(limit=10)
         self._session = aiohttp.ClientSession(connector=connector)
 
-    async def aclose(self):
+    async def aclose(self) -> None:
         if self._session is None:
             warnings.warn("aclose called without session", UserWarning)
             return
         await self._session.close()
         self._session = None
 
-    @check_session
+    def _get_session(self) -> aiohttp.ClientSession:
+        if self._session is None:
+            raise ValueError("Session not set")
+        return self._session
+
     async def healthcheck(self, timeout: int = 5) -> bool:
         """Check whether DAR can be reached
 
@@ -55,7 +58,7 @@ class AsyncDARClient:
         """
         url = f"{self._baseurl}/autocomplete"
         try:
-            async with self._session.get(url, timeout=timeout) as response:
+            async with self._get_session().get(url, timeout=timeout) as response:
                 if response.status == 200:
                     return True
                 return False
@@ -71,7 +74,7 @@ if __name__ == "__main__":
     from ra_utils.async_to_sync import async_to_sync
 
     @async_to_sync
-    async def amain():
+    async def amain() -> None:
         darclient = DARClient()
         async with darclient:
             print(await darclient.healthcheck())
@@ -85,7 +88,7 @@ if __name__ == "__main__":
         # ValueError: Session not set
         # await darclient.healthcheck()
 
-    def main():
+    def main() -> None:
         darclient = DARClient()
         with darclient:
             print(darclient.healthcheck())
