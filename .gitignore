@@ -1,0 +1,8 @@
+# Cache
+.cache
+.hypothesis/
+.coverage
+htmlcov/
+site/
+old/
+__pycache__
