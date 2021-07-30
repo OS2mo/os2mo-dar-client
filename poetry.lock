@@ -668,28 +668,6 @@ python-versions = ">=3.6"
 pyyaml = "*"
 
 [[package]]
-name = "ra-utils"
-version = "0.3.1"
-description = "Utilities for OS2mo/LoRa"
-category = "main"
-optional = false
-python-versions = "^3.8"
-develop = true
-
-[package.dependencies]
-more-itertools = "^8.8.0"
-
-[package.extras]
-jinja = ["Jinja2 (>=3.0.1,<4.0.0)"]
-pydantic = ["pydantic (>=1.8.2,<2.0.0)"]
-headers = ["pydantic (>=1.8.2,<2.0.0)", "requests (>=2.26.0,<3.0.0)", "types-requests (>=2.25.0,<3.0.0)"]
-all = ["Jinja2 (>=3.0.1,<4.0.0)", "pydantic (>=1.8.2,<2.0.0)", "requests (>=2.26.0,<3.0.0)", "types-requests (>=2.25.0,<3.0.0)"]
-
-[package.source]
-type = "directory"
-url = "../ra-utils"
-
-[[package]]
 name = "regex"
 version = "2021.7.6"
 description = "Alternative regular expression module, to replace re."
@@ -813,7 +791,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "58c40477fc74dcfa326e5c7edbfcacdaabc45e46109e05bedcc8212a5927f816"
+content-hash = "52e3a39d98d529f80ffc1d6ebc90f2110bda4cb456711b497ecb83c5e18d19e0"
 
 [metadata.files]
 aiohttp = [
@@ -1246,7 +1224,6 @@ pyyaml-env-tag = [
     {file = "pyyaml_env_tag-0.1-py3-none-any.whl", hash = "sha256:af31106dec8a4d68c60207c1886031cbf839b68aa7abccdb19868200532c2069"},
     {file = "pyyaml_env_tag-0.1.tar.gz", hash = "sha256:70092675bda14fdec33b31ba77e7543de9ddc88f2e5b99160396572d11525bdb"},
 ]
-ra-utils = []
 regex = [
     {file = "regex-2021.7.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:e6a1e5ca97d411a461041d057348e578dc344ecd2add3555aedba3b408c9f874"},
     {file = "regex-2021.7.6-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:6afe6a627888c9a6cfbb603d1d017ce204cebd589d66e0703309b8048c3b0854"},
