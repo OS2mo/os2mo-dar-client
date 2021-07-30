@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import warnings
+from asyncio.exceptions import TimeoutError
 from types import TracebackType
 from typing import Optional
 from typing import Type
@@ -64,43 +65,9 @@ class AsyncDARClient:
                 return False
         except aiohttp.ClientError:
             return False
+        except TimeoutError:
+            return False
 
 
 class DARClient(Syncable, AsyncDARClient):
     pass
-
-
-if __name__ == "__main__":
-    from ra_utils.async_to_sync import async_to_sync
-
-    @async_to_sync
-    async def amain() -> None:
-        darclient = DARClient()
-        async with darclient:
-            print(await darclient.healthcheck())
-
-        await darclient.aopen()
-        await darclient.aopen()
-        print(await darclient.healthcheck())
-        await darclient.aclose()
-        await darclient.aclose()
-
-        # ValueError: Session not set
-        # await darclient.healthcheck()
-
-    def main() -> None:
-        darclient = DARClient()
-        with darclient:
-            print(darclient.healthcheck())
-
-        darclient.aopen()
-        darclient.aopen()
-        print(darclient.healthcheck())
-        darclient.aclose()
-        darclient.aclose()
-
-        # ValueError: Session not set
-        # darclient.healthcheck()
-
-    amain()
-    main()
