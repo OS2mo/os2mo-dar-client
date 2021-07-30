@@ -1,0 +1,48 @@
+site_name: OS2mo DAR Client
+site_url: ""
+use_directory_urls: False
+site_description: OS2mo DAR Client is a client for DAWA / DAR
+repo_name: os2mo-dar-client
+# TODO: Use the GitHub repo when it's ready
+repo_url: https://git.magenta.dk/rammearkitektur/os2mo-dar-client
+
+nav:
+  - index.md
+  - DARClient: modules/dar_client.md
+
+theme:
+  name: "material"
+  palette:
+    - scheme:
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+  features:
+    - navigation.instant
+    - navigation.tracking
+
+
+# Adds Magenta's colour scheme
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_options:
+              replace_admonitions: no
+      watch:
+        - os2mo_dar_client
+        - tests
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
