@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-
-from aiohttp import web
 import pytest
+from aiohttp import web
 from ra_utils.syncable import Syncable
 
 from os2mo_dar_client import AsyncDARClient
 from os2mo_dar_client import DARClient
+
 
 async def darserver_mock() -> web.Application:
     async def autocomplete(request):
