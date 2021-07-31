@@ -16,6 +16,8 @@ Dependencies:
 * <a href="https://more-itertools.readthedocs.io/" class="external-link" target="_blank">More Itertools</a>
 * <a href="https://docs.aiohttp.org/en/stable/" class="external-link" target="_blank">AIOHTTP</a>
 * <a href="https://rammearkitektur.docs.magenta.dk/ra-utils/index.html" class="external-link" target="_blank">RA Utils</a>
+* <a href="https://tenacity.readthedocs.io/" class="external-link" target="_blank">Tenacity</a>
+
 
 ## Installation
 

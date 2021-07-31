@@ -25,6 +25,9 @@ import aiohttp
 from more_itertools import chunked
 from more_itertools import unzip
 from ra_utils.syncable import Syncable
+from tenacity import Retrying
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
 
 
 # TODO: Pydantic type
@@ -42,9 +45,11 @@ ALL_ADDRESS_TYPES = list(AddressType)
 
 
 class AsyncDARClient:
-    def __init__(self) -> None:
+    def __init__(self, *, retrying_stop=None, retrying_wait=None) -> None:
         self._session: Optional[aiohttp.ClientSession] = None
         self._baseurl: str = "https://api.dataforsyningen.dk"
+        self._retrying_stop or stop_after_attempt(5)
+        self._retrying_wait or wait_exponential(multiplier=2, min=1)
 
     async def __aenter__(self) -> "AsyncDARClient":
         await self.aopen()
