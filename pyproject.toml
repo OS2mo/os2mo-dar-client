@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "os2mo-dar-client"
-version = "0.1.0"
+version = "0.2.0"
 description = "OS2mo DAR Client is a client for DAWA / DAR"
 authors = ["Magenta <info@magenta.dk>"]
 license = "MPL-2.0"
