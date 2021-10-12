@@ -38,6 +38,69 @@ dar_non_existent = {
     UUID("00000000-0000-0000-0000-000000000000"),
     UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
 }
+# Actual DAR cleanse results
+dar_cleanse_lookup = {
+    "Sankt Johannes Alle 2, 8000 Aarhus C": {
+        "kategori": "B",
+        "resultater": [
+            {
+                "adresse": {
+                    "id": "0a3f50c4-379f-32b8-e044-0003ba298018",
+                    "vejnavn": "Skt.Johannes Alle",
+                    "husnr": "2",
+                    "postnr": "8000",
+                    "postnrnavn": "Aarhus C",
+                }
+            }
+        ],
+    },
+    "Rådhuspladsen 1, 8000 Aarhus C": {
+        "kategori": "A",
+        "resultater": [
+            {
+                "adresse": {
+                    "id": "a79762e7-52bf-4199-a026-4ab42e1138a7",
+                    "vejnavn": "Rådhuspladsen",
+                    "husnr": "1",
+                    "postnr": "8000",
+                    "postnrnavn": "Aarhus C",
+                }
+            }
+        ],
+    },
+    "Flyvervej x, Svendborg": {
+        "kategori": "C",
+        "resultater": [
+            # ... Imagine lots of results here
+        ],
+    },
+}
+dar_cleanse_parameterize = (
+    "address_string,expected",
+    [
+        (
+            "Sankt Johannes Alle 2, 8000 Aarhus C",
+            {
+                "id": "0a3f50c4-379f-32b8-e044-0003ba298018",
+                "vejnavn": "Skt.Johannes Alle",
+                "husnr": "2",
+                "postnr": "8000",
+                "postnrnavn": "Aarhus C",
+            },
+        ),
+        (
+            "Rådhuspladsen 1, 8000 Aarhus C",
+            {
+                "id": "a79762e7-52bf-4199-a026-4ab42e1138a7",
+                "vejnavn": "Rådhuspladsen",
+                "husnr": "1",
+                "postnr": "8000",
+                "postnrnavn": "Aarhus C",
+            },
+        ),
+    ],
+)
+dar_cleanse_unspecific_match = {"Flyvervej x, Svendborg", ""}
 
 
 def assert_dar_response(result, expected):
@@ -48,6 +111,12 @@ def assert_dar_response(result, expected):
 async def darserver_mock() -> web.Application:
     async def autocomplete(request):
         return web.Response(text="OK")
+
+    async def cleanse_endpoint(request):
+        address_string = request.query.get("betegnelse")
+        if address_string not in dar_cleanse_lookup:
+            raise web.HTTPNotFound()
+        return web.json_response(dar_cleanse_lookup[address_string])
 
     async def single_address_endpoint(request):
         uuid = UUID(request.path.rsplit("/")[-1])
@@ -67,6 +136,8 @@ async def darserver_mock() -> web.Application:
     for addrtype in ALL_ADDRESS_TYPES:
         app.router.add_get(f"/{addrtype.value}/" + "{uuid}", single_address_endpoint)
         app.router.add_get(f"/{addrtype.value}", address_endpoint)
+
+        app.router.add_get(f"/datavask/{addrtype.value}", cleanse_endpoint)
     return app
 
 

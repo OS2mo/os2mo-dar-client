@@ -23,6 +23,7 @@ from uuid import UUID
 
 import aiohttp
 from more_itertools import chunked
+from more_itertools import one
 from more_itertools import unzip
 from ra_utils.syncable import Syncable
 
@@ -145,6 +146,49 @@ class AsyncDARClient:
             return False
         except TimeoutError:
             return False
+
+    async def _cleanse_single(
+        self, address_string: str, addrtype: AddressType
+    ) -> AddressReply:
+        """Request that DAR cleanse a string address for us.
+
+        The cleansing process attempts to convert an unstructured text string into a
+        stuctured address reply. The process may fail if the input string is too vague.
+
+        Args:
+            address_string: The address string we wish to cleanse.
+            addrtype: The address type to lookup.
+
+        Raises:
+            aiohttp.ClientResponseError: If anything goes wrong.
+            ValueError: If passed a historic addrtype.
+            RuntimeError: If one unique match could not be found.
+
+        Returns:
+            * dict: DAR Reply
+        """
+        if addrtype in [
+            AddressType.HISTORIC_ADDRESS,
+            AddressType.HISTORIC_ACCESS_ADDRESS,
+        ]:
+            raise ValueError("DAR does not support historic cleansing")
+
+        url = f"{self._baseurl}/datavask/{addrtype.value}"
+        params = {"betegnelse": address_string}
+
+        async with self._get_session().get(
+            url, params=params, timeout=self._timeout
+        ) as response:
+            response.raise_for_status()
+            payload = await response.json()
+            # Check match category:
+            # A is a near perfect match,
+            # B is a unique match,
+            # C is a non-unique match (which we do not accept)
+            if payload["kategori"] not in ["A", "B"]:
+                raise RuntimeError("DAR was unable to find a conclusive match")
+            address = one(payload["resultater"])["adresse"]
+            return cast(AddressReply, address)
 
     # TODO: Caching goes in here
     async def _address_fetched(self, uuid: UUID, reply: Dict[str, Any]) -> None:
@@ -324,6 +368,44 @@ class AsyncDARClient:
                     continue
                 raise exc
         raise ValueError("No address match found in DAR")
+
+    async def cleanse_single(
+        self, address_string: str, addrtypes: Optional[List[AddressType]] = None
+    ) -> AddressReply:
+        """Request that DAR cleanse a string address for us.
+
+        The cleansing process attempts to convert an unstructured text string into a
+        stuctured address reply. The process may fail if the input string is too vague.
+
+        Calls `_cleanse_single` with appropriate addrtypes.
+
+        Args:
+            address_string: The address string we wish to cleanse.
+            addrtypes: The address type(s) to lookup. If `None` all 4 types are checked.
+
+        Raises:
+            aiohttp.ClientResponseError: If anything goes wrong.
+            ValueError: If passed a historic addrtype.
+            RuntimeError: If one unique match could not be found.
+
+        Returns:
+            * dict: DAR Reply
+        """
+        addrtypes = addrtypes or [AddressType.ADDRESS, AddressType.ACCESS_ADDRESS]
+        # TODO: Do all in parallel?
+        for addrtype in addrtypes:
+            try:
+                payload = await self._cleanse_single(address_string, addrtype)
+                return payload
+            except aiohttp.ClientResponseError as exc:
+                # If not found, try the next address type
+                if exc.status == 404:
+                    continue
+                raise exc
+            except RuntimeError:
+                # If we did not find a conclusive match, try the next address type
+                continue
+        raise ValueError("No address match found from cleansing in DAR")
 
 
 class DARClient(Syncable, AsyncDARClient):
