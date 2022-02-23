@@ -26,7 +26,11 @@ from more_itertools import chunked
 from more_itertools import one
 from more_itertools import unzip
 from ra_utils.syncable import Syncable
+from tenacity import retry
+from tenacity import stop_after_delay
+from tenacity import wait_exponential
 
+retry_max_time = 10
 
 # TODO: Pydantic type: #45518
 AddressReply = Dict[str, Any]
@@ -79,7 +83,6 @@ class AsyncDARClient:
 
     # TODO: Query endpoints ala dawa_helper.py: #45522
     # TODO: Autocomplete endpoints ala OS2mo: #45521
-    # TODO: Retrying: #45520
     # TODO: Caching: #45519
 
     def __init__(self, timeout: int = 10) -> None:
@@ -194,7 +197,11 @@ class AsyncDARClient:
     async def _address_fetched(self, uuid: UUID, reply: Dict[str, Any]) -> None:
         pass
 
-    # TODO: Retrying goes in here
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_delay(retry_max_time),
+    )
     async def _fetch_single(self, uuid: UUID, addrtype: AddressType) -> AddressReply:
         """Lookup uuid in DAR.
 
@@ -219,7 +226,11 @@ class AsyncDARClient:
             payload = await response.json()
             return cast(AddressReply, payload)
 
-    # TODO: Retrying goes in here
+    @retry(
+        reraise=True,
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        stop=stop_after_delay(retry_max_time),
+    )
     async def _fetch_non_chunked(
         self, uuids: Set[UUID], addrtype: AddressType
     ) -> Tuple[Dict[UUID, AddressReply], Set[UUID]]:
@@ -299,7 +310,10 @@ class AsyncDARClient:
         if num_uuids == 0:
             return dict(), set()
         if num_uuids <= chunk_size:
-            return await self._fetch_non_chunked(uuids, addrtype)
+            res: Tuple[
+                Dict[UUID, AddressReply], Set[UUID]
+            ] = await self._fetch_non_chunked(uuids, addrtype)
+            return res
         return await self._fetch_chunked(uuids, addrtype, chunk_size)
 
     async def fetch(
@@ -358,7 +372,7 @@ class AsyncDARClient:
         # TODO: Do all 4 in parallel?
         for addrtype in addrtypes:
             try:
-                payload = await self._fetch_single(uuid, addrtype)
+                payload: AddressReply = await self._fetch_single(uuid, addrtype)
                 # If we get here everything went well
                 await self._address_fetched(uuid, payload)
                 return payload

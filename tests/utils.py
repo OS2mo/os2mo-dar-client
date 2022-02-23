@@ -7,6 +7,7 @@ from uuid import UUID
 import pytest
 from aiohttp import web
 from ra_utils.syncable import Syncable
+from tenacity import stop_after_delay
 
 from os2mo_dar_client import AsyncDARClient
 from os2mo_dar_client import DARClient
@@ -160,6 +161,7 @@ async def darclient_mocks(
     adarclient._baseurl = ""
     darclient = TestDARClient()
     darclient._baseurl = ""
+    adarclient._fetch_single.retry.stop = stop_after_delay(0)  # type: ignore
     return adarclient, darclient
 
 
