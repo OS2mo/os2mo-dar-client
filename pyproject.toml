@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "os2mo-dar-client"
-version = "1.0.0"
+version = "1.0.1"
 description = "OS2mo DAR Client is a client for DAWA / DAR"
 authors = ["Magenta <info@magenta.dk>"]
 license = "MPL-2.0"
@@ -8,6 +8,8 @@ readme = "README.md"
 homepage = "https://magenta.dk/"
 repository = "https://git.magenta.dk/rammearkitektur/ra-utils"
 keywords = ["os2mo", "lora", "dar", "client"]
+packages = [ { include = "os2mo_dar_client" } ]
+include = ["os2mo_dar_client/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -19,7 +21,7 @@ tenacity = "^8.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
-black = "^21.5b0"
+black = "^22.3.0"
 flake8 = "^3.9.1"
 mypy = "^0.812"
 reorder-python-imports = "^2.5.0"
