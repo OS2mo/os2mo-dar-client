@@ -15,7 +15,7 @@ include = ["os2mo_dar_client/py.typed"]
 python = "^3.8"
 more-itertools = "^9.1.0"
 aiohttp = "^3.7.4"
-ra-utils = "^1"
+ra-utils = ">=1.13.9, <2"
 click = {version = "^8.0.1", optional = true}
 tenacity = "^8.0.1"
 

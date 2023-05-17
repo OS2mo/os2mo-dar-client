@@ -162,7 +162,7 @@ async def darclient_mocks(
     darclient = TestDARClient()
     darclient._baseurl = ""
     adarclient._fetch_single.retry.stop = stop_after_delay(0)  # type: ignore
-    return adarclient, darclient
+    return adarclient, darclient  # type: ignore
 
 
 async def darclient_mock(aiohttp_client, darserver) -> DARClient:

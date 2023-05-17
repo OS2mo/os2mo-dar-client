@@ -24,7 +24,7 @@ from uuid import UUID
 import aiohttp
 from more_itertools import chunked
 from more_itertools import one
-from more_itertools import unzip
+from ra_utils.asyncio_utils import gather_with_concurrency
 from ra_utils.syncable import Syncable
 from tenacity import retry
 from tenacity import stop_after_delay
@@ -283,9 +283,9 @@ class AsyncDARClient:
         # Convert chunks into a list of asyncio.tasks
         tasks = map(partial(self._fetch_non_chunked, addrtype=addrtype), uuid_chunks)
         # Here 'result' is a list of tuples (dict, set) => (result, missing)
-        result = await gather(*tasks)
+        result = await gather_with_concurrency(5, *tasks)
         # First we unzip 'result' to get a list of results and a list of missing
-        result_dicts, missing_sets = unzip(result)
+        result_dicts, missing_sets = zip(*result)
         # Then we union the dicts and sets before returning
         combined_result = dict(ChainMap(*result_dicts))
         combined_missing = set.union(*missing_sets)
