@@ -79,8 +79,7 @@ Test on Python 3.9:
 # ---------------------------------------------------------------------------
 Deploy to PyPI:
   <<: *deploy
-  script: poetry publish --build -u OS2mo -p $PYPI_PWD
-
+  script: poetry publish --build -u __token__ -p $PYPI_TOKEN
 
 pages:
   <<: *install-deps
