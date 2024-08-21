@@ -292,7 +292,7 @@ class AsyncDARClient:
         return combined_result, combined_missing
 
     async def _fetch(
-        self, uuids: Set[UUID], addrtype: AddressType, chunk_size: int = 100
+        self, uuids: Set[UUID], addrtype: AddressType, chunk_size: int
     ) -> Tuple[Dict[UUID, AddressReply], Set[UUID]]:
         """Lookup uuids in DAR (chunked if required).
 
@@ -320,6 +320,9 @@ class AsyncDARClient:
         self,
         uuids: Set[UUID],
         addrtypes: Optional[List[AddressType]] = None,
+        # WARNING: DAR does not support paths of more than 4096 characters on
+        # HTTP/1.1. aiohttp does not support HTTP/2. Do not increase the
+        # `chunk_size` without testing irl.
         chunk_size: int = 100,
     ) -> Tuple[Dict[UUID, AddressReply], Set[UUID]]:
         """Lookup uuids in DAR (chunked if necessary).
